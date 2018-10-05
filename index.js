@@ -18,7 +18,7 @@ const storage = require('./app/storage');
 
 const options = {
   hostname: (process.env.APP_HOSTNAME || 'localhost'),
-  port: (process.env.APP_PORT || '8080'),
+  port: parseInt((process.env.APP_PORT || 8080), 10),
   key: fs.readFileSync((process.env.APP_KEY || '')),
   cert: fs.readFileSync((process.env.APP_CERT || ''))
 };
@@ -63,10 +63,30 @@ app.post('/logout', (req, res) => {
   res.redirect('/');
 });
 
+app.post('/messages/delete', (req, res) => {
+  if (req.session.currentUser.username !== req.body.username) {
+    res.redirect('wrong credentials');
+  } else {
+    const message = {
+      username: req.session.currentUser.username,
+      value: escapeHTML(req.body.value || ''),
+      key: escapeHTML(req.body.key || '')
+    };
+
+    storage.messages.delete(message)
+      .then((onSuccess) => {
+        res.redirect('/');
+      })
+      .catch((onError) => {
+        res.send('error delete');
+      });
+  }
+});
+
 app.post('/signup', async (req, res) => {
   let bSuccess = false;
-  const username = escapeHTML(req.body.username || null);
-  let password = escapeHTML(req.body.password || null);
+  let password = escapeHTML(req.body.password || '');
+  const username = escapeHTML(req.body.username || '');
 
   if ((isUsernameValid(username) && isPasswordValid(password))) {
     const user = await storage.users.findByUsername(username);
@@ -75,7 +95,6 @@ app.post('/signup', async (req, res) => {
       bSuccess = true;
       password = hashPassword(password);
       const createdUser = storage.users.create(username, password);
-      console.log({createdUser});
     }
   }
 
@@ -84,8 +103,8 @@ app.post('/signup', async (req, res) => {
 
 app.post('/login', async (req, res) => {
   let bSuccess = false;
-  const username = escapeHTML(req.body.username || null);
-  const password = escapeHTML(req.body.password || null);
+  const username = escapeHTML(req.body.username || '');
+  const password = escapeHTML(req.body.password || '');
 
   if ((isUsernameValid(username) && isPasswordValid(password))) {
     const user = await storage.users.findByUsername(username);

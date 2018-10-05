@@ -46,8 +46,25 @@ const homePage = function (
     </form>
   `;
 
+
+  const messageDelete = (message) => `
+    <form method="post" action="/messages/delete">
+      <input type="hidden" name="_csrf" value="${csrfToken}">
+      <input type="hidden" name="username" value="${message.username}" />
+      <input type="hidden" name="value" value="${message.value}" />
+      <input type="hidden" name="key" value="${message.key}" />
+      <button>delete</button>
+    </form>
+  `;
+
   const messageList = function() {
-    return messages.map(message => `<li><b>@${message.username}</b> : ${message.value}</li>`).join('')
+    return messages.map((message) => `<li>
+      ${message.username !== username 
+        ? ''
+        : messageDelete(message)
+      }
+      <b>@${message.username}</b> : ${message.value}
+    </li>`).join('')
   }
 
   return `

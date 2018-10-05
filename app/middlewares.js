@@ -10,7 +10,7 @@ const SESSION_SECRET = crypto.randomBytes(64).toString('hex');
 
 const otpsRedisStore = {
   host: (process.env.REDIS_HOSTNAME || '127.0.0.1'),
-  port: (process.env.REDIS_POST || 6379);
+  port: parseInt((process.env.REDIS_POST || 6379), 10)
 };
 
 const middlewares = (app) => {
