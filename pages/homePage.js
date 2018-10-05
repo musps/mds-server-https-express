@@ -9,7 +9,7 @@ const homePage = function (
     <div>
       <h2>Sign Up</h2>
       <form method="post" action="/signup">
-        <input type="hidden" name="_csrf" value="${csrfToken}">
+        <input type="hidden" name="_csrf" value="${csrfToken()}">
         <label>username:</label>
         <input name="username" type="text" />
         <label>password:</label>
@@ -22,34 +22,33 @@ const homePage = function (
     <div>
       <h2>Sign In</h2>
       <form method="post" action="/login">
-        <input type="hidden" name="_csrf" value="${csrfToken}">
+        <input type="hidden" name="_csrf" value="${csrfToken()}">
         <label>username:</label>
         <input name="username" type="text"/>
         <label>password:</label>
         <input name="password" type="password"/>
-        <button>login</submit>
+        <button>login</button>
       </form>
     </div>
   `;
   const logoutForm = `
     <form method="post" action="/logout">
-      <input type="hidden" name="_csrf" value="${csrfToken}">
-      <button>logout</submit>
+      <input type="hidden" name="_csrf" value="${csrfToken()}">
+      <button>logout</button>
     </form>
   `;
   const newMessageForm = `
     <form method="post" action="/messages">
-      <input type="hidden" name="_csrf" value="${csrfToken}">
+      <input type="hidden" name="_csrf" value="${csrfToken()}">
       <label>message:</label>
       <input name="message" type="text"/>
-      <button>send</submit>
+      <button>send</button>
     </form>
   `;
 
-
   const messageDelete = (message) => `
     <form method="post" action="/messages/delete">
-      <input type="hidden" name="_csrf" value="${csrfToken}">
+      <input type="hidden" name="_csrf" value="${csrfToken()}">
       <input type="hidden" name="username" value="${message.username}" />
       <input type="hidden" name="value" value="${message.value}" />
       <input type="hidden" name="key" value="${message.key}" />

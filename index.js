@@ -14,6 +14,7 @@ const {
 } = require('./app/utils');
 
 const middlewares = require('./app/middlewares');
+const errorHandler = middlewares.errorHandler;
 const storage = require('./app/storage');
 
 const options = {
@@ -23,7 +24,7 @@ const options = {
   cert: fs.readFileSync((process.env.APP_CERT || ''))
 };
 
-const app = express();
+let app = express();
 middlewares.use(app);
 
 const homePage = require('./pages/homePage.js');
@@ -35,18 +36,26 @@ server.listen(options.port, () => {
   console.log(uri);
 });
 
-app.get('/', async (req, res) => {
+app.get('/messages/list', errorHandler(async(req, res) => {
+  const messages = await storage.messages.getAll();
+
+  res.json({
+    messages: messages
+  });
+}));
+
+app.get('/', errorHandler(async (req, res) => {
   const currentUser = req.session.currentUser || [];
   const messages = await storage.messages.getAll();
 
   res.end(homePage({
     messages,
     username: currentUser.username,
-    csrfToken: req.csrfToken()
+    csrfToken: () => (req.createCSRF())
   }));
-});
+}));
 
-app.post('/messages', (req, res) => {
+app.post('/messages', errorHandler((req, res) => {
   const escapeMsg = escapeHTML(req.body.message || '');
 
   if (escapeMsg.length < 255 && escapeMsg.length > 1) {
@@ -56,14 +65,14 @@ app.post('/messages', (req, res) => {
   } else {
     res.send('invalid message');
   }
-});
+}));
 
-app.post('/logout', (req, res) => {
+app.post('/logout', errorHandler((req, res) => {
   req.session.destroy();
   res.redirect('/');
-});
+}));
 
-app.post('/messages/delete', (req, res) => {
+app.post('/messages/delete', errorHandler((req, res) => {
   if (req.session.currentUser.username !== req.body.username) {
     res.redirect('wrong credentials');
   } else {
@@ -81,9 +90,9 @@ app.post('/messages/delete', (req, res) => {
         res.send('error delete');
       });
   }
-});
+}));
 
-app.post('/signup', async (req, res) => {
+app.post('/signup', errorHandler(async (req, res) => {
   let bSuccess = false;
   let password = escapeHTML(req.body.password || '');
   const username = escapeHTML(req.body.username || '');
@@ -99,9 +108,9 @@ app.post('/signup', async (req, res) => {
   }
 
   return bSuccess ? res.redirect('/') : res.send('invalid credentials');
-});
+}));
 
-app.post('/login', async (req, res) => {
+app.post('/login', errorHandler(async (req, res) => {
   let bSuccess = false;
   const username = escapeHTML(req.body.username || '');
   const password = escapeHTML(req.body.password || '');
@@ -117,4 +126,4 @@ app.post('/login', async (req, res) => {
   }
 
   return bSuccess ? res.redirect('/') : res.send('invalid credentials');
-});
+}));
